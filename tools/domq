@@ -21,4 +21,4 @@ const document = parser.parseFromString(input, "text/html");
 
 const node = document.querySelector("pre > code");
 
-console.log(node.textContent);
+console.log(node.textContent.replace(/\n$/, ""));
