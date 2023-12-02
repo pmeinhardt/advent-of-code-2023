@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+cd "$(dirname "$0")"
+source "sh/common.sh"
+
+if [ $# -ne 1 ]; then
+  quit "usage: $0 <day>"
+fi
+
+open "https://adventofcode.com/2023/day/$1"

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+cd "$(dirname "$0")"
+source "sh/common.sh"
+
+if [ $# -ne 1 ]; then
+  quit "usage: $0 <day>"
+fi
+
+day="$1"
+dir=$(printf "%02d" "$day")
+
+session=$(cat session.txt)
+
+mkdir -p "$dir"
+
+curl \
+  --silent \
+  --show-error \
+  --cookie "session=$session" \
+  --output "$dir/input.txt" \
+  "https://adventofcode.com/2023/day/$day/input"
+
+for part in "1" "2"; do
+  script="$dir/eval-$part"
+  touch "$script"
+  chmod a+x "$script"
+done
