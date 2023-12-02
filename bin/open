@@ -4,8 +4,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-cd "$(dirname "$0")"
-source "sh/common.sh"
+cd "$(dirname "$0")/.."
+
+# shellcheck source=../lib/common.sh
+source "lib/common.sh"
 
 if [ $# -ne 1 ]; then
   quit "usage: $0 <day>"
