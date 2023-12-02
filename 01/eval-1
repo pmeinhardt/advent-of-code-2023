@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+
+import re
+import sys
+
+pattern = re.compile("[0-9]")
+sum = 0
+
+for line in sys.stdin:
+  digits = pattern.findall(line)
+  sum += int(digits[0] + digits[-1])
+
+print(sum)
