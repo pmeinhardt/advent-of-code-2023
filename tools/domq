@@ -1,0 +1,24 @@
+#!/usr/bin/env -S deno run --ext=ts
+
+import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.43/deno-dom-wasm.ts";
+
+if (Deno.args.length != 1) {
+  console.log(`Usage: domq <css-selector>`);
+  Deno.exit(1);
+}
+
+const decoder = new TextDecoder();
+const parts = [];
+
+for await (const chunk of Deno.stdin.readable) {
+  parts.push(decoder.decode(chunk));
+}
+
+const input = parts.join("");
+
+const parser = new DOMParser();
+const document = parser.parseFromString(input, "text/html");
+
+const node = document.querySelector("pre > code");
+
+console.log(node.textContent);

@@ -32,3 +32,11 @@ for part in "1" "2"; do
   touch "$script"
   chmod a+x "$script"
 done
+
+curl \
+  --silent \
+  --show-error \
+  --cookie "session=$session" \
+  "https://adventofcode.com/2023/day/$day" \
+  | ./tools/domq 'pre > code' \
+  > "$dir/example.txt"
