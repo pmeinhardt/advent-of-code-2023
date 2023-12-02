@@ -14,12 +14,13 @@ if [ $# -lt 1 ] || [ $# -gt 3 ]; then
 fi
 
 day="$1"
-dir=$(printf "%02d" "$day")
-part=${2:-1}
-flag=${3:-}
+part="${2:-1}"
+flag="${3:-}"
 
-script="$day/eval-$part"
-input="$day/input.txt"
+dir=$(printf "%02d" "$day")
+
+script="$dir/eval-$part"
+input="$dir/input.txt"
 
 if [ "$flag" = "--test" ] || [ "$flag" = "-t" ]; then
   input="$dir/example.txt"

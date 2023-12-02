@@ -13,4 +13,7 @@ if [ $# -lt 1 ] || [ $# -gt 2 ]; then
   quit "usage: $0 <day> [part]"
 fi
 
-./eval "$@" --test
+day="$1"
+part="${2:-1}"
+
+./bin/eval "$day" "$part" --test
