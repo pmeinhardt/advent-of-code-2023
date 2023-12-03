@@ -7,7 +7,7 @@ pattern = re.compile("[0-9]")
 sum = 0
 
 for line in sys.stdin:
-  digits = pattern.findall(line)
+  digits = pattern.findall(line.rstrip())
   sum += int(digits[0] + digits[-1])
 
 print(sum)
