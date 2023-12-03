@@ -8,7 +8,7 @@ view () {
 }
 
 load () {
-  curl --silent --show-error "${@:2}" "$BASE/$1"
+  curl --silent --show-error --fail-with-body "${@:2}" "$BASE/$1"
 }
 
 quit () {
