@@ -15,7 +15,7 @@ def subtract(reference, counts):
     return tmp
 
 def possible(game, setup):
-    return not any(any(c < 0 for _, c in subtract(setup, sample).items()) for sample in game.samples)
+    return not any(any(c < 0 for c in subtract(setup, sample).values()) for sample in game.samples)
 
 def count(input):
     n, label = input.split(' ')
