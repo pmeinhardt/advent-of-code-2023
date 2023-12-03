@@ -2,6 +2,7 @@
 
 from collections import Counter
 from dataclasses import dataclass
+from functools import reduce
 import sys
 
 @dataclass
@@ -9,13 +10,11 @@ class Game:
     number: int
     samples: list
 
-def subtract(reference, counts):
-    tmp = Counter(reference)
-    tmp.subtract(counts)
-    return tmp
+def power(counts):
+    return reduce(lambda a, b: a * b, counts.values())
 
-def possible(game, setup):
-    return not any(any(c < 0 for _, c in subtract(setup, sample).items()) for sample in game.samples)
+def min(game):
+    return reduce(lambda m, s: m | s, game.samples)
 
 def count(input):
     n, label = input.split(' ')
@@ -30,6 +29,5 @@ def parse(input):
     return Game(int(num), samples)
 
 if __name__ == '__main__':
-    setup = Counter({'red': 12, 'green': 13, 'blue': 14})
     games = [parse(line.rstrip()) for line in sys.stdin]
-    print(sum(game.number for game in games if possible(game, setup)))
+    print(sum(power(min(game)) for game in games))
