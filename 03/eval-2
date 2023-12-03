@@ -5,22 +5,23 @@ import re
 import sys
 
 lines = [line.rstrip() for line in sys.stdin]
-
-w, h = max(len(l) for l in lines), len(lines)
+width, height = max(len(line) for line in lines), len(lines)
 
 numbers = [list(re.finditer('([0-9]+)', line)) for line in lines]
 symbols = [list(re.finditer('[*]', line)) for line in lines]
 
 total = 0
 
-for i, xs in enumerate(symbols):
-    for x in xs:
+for i, syms in enumerate(symbols):
+    for sym in syms:
+        start, end = sym.span()
         matches = set()
 
-        for j in range(max(i - 1, 0), min(i + 2, h)):
-            start, end = x.span()
+        left, right = max(start - 1, 0), min(end + 1, width)
+        top, bottom = max(i - 1, 0), min(i + 2, height)
 
-            for k in range(max(start - 1, 0), min(end + 1, w)):
+        for j in range(top, bottom):
+            for k in range(left, right):
                 matches |= {m for m in numbers[j] if k in range(*m.span())}
 
         if len(matches) == 2:
