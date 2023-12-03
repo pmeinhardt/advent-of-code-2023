@@ -13,4 +13,4 @@ if [ $# -ne 1 ]; then
   quit "usage: $0 <day>"
 fi
 
-open "https://adventofcode.com/2023/day/$1"
+view "day/$1"

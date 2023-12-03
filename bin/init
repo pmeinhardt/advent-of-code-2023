@@ -20,12 +20,7 @@ session=$(cat session.txt)
 
 mkdir -p "$dir"
 
-curl \
-  --silent \
-  --show-error \
-  --cookie "session=$session" \
-  --output "$dir/input.txt" \
-  "https://adventofcode.com/2023/day/$day/input"
+load "day/$day/input" --cookie "session=$session" --output "$dir/input.txt"
 
 for part in "1" "2"; do
   script="$dir/eval-$part"
@@ -33,10 +28,4 @@ for part in "1" "2"; do
   chmod a+x "$script"
 done
 
-curl \
-  --silent \
-  --show-error \
-  --cookie "session=$session" \
-  "https://adventofcode.com/2023/day/$day" \
-  | ./tools/domq 'pre > code' \
-  > "$dir/example.txt"
+load "day/$day" | tools/domq 'pre > code' > "$dir/example.txt"
