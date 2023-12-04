@@ -14,10 +14,14 @@ def parse(line):
     return (nums(left), nums(right))
 
 def score(left, right):
-    matched = len(left & right)
-    if matched > 0:
-        return 2**(matched - 1)
-    return 0
+    return len(left & right)
 
 if __name__ == "__main__":
-    print(sum(score(*parse(line)) for line in sys.stdin))
+    cards = [parse(line) for line in sys.stdin]
+    counts = [1] * len(cards)
+
+    for index, points in enumerate(score(*card) for card in cards):
+        for i in range(index + 1, min(index + 1 + points, len(cards))):
+            counts[i] += counts[index]
+
+    print(sum(counts))
