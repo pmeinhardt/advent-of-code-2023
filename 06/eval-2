@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+
+from functools import reduce
+from itertools import dropwhile, takewhile
+import sys
+
+def dist(hold, time):
+    if hold < time:
+        return (time - hold) * hold
+    return 0
+
+def parse(file):
+    time = int("".join(next(file).removeprefix("Time:").strip().split()))
+    dist = int("".join(next(file).removeprefix("Distance:").strip().split()))
+    return (time, dist)
+
+if __name__ == "__main__":
+    time, record = parse(sys.stdin)
+    opts = (takewhile(lambda t: dist(t, time) > record, dropwhile(lambda t: dist(t, time) <= record, range(1, time))))
+    print(len(list(opts)))
