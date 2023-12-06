@@ -1,8 +1,25 @@
 #!/usr/bin/env python3
 
 from functools import reduce
-from itertools import batched, chain, takewhile
+from itertools import batched, takewhile
 import sys
+
+# Observations:
+#
+# 0. All seed values (and all intermediate values) are always non-negative.
+# 1. Due to how mappings are defined, larger values within a source range
+#    will always map to larger values in the destination range, e.g.:
+#    98 -> 50, 99 -> 51, …
+# 2. Because we are looking for the lowest possible output,
+#    it is therefore enough to look at the lower ends of ranges.
+#
+# In general, for efficiency, we perform arithmetic on ranges/intervals
+# for each mapping level, rather than iterating the large sequences of
+# numbers.
+#
+# Starting with the seed ranges, we check how they overlap with the first
+# mapping's source ranges and compute new, offset ranges to be used as seeds
+# for the next level.
 
 def blocks(lines):
     while True:
@@ -19,7 +36,9 @@ def mapping(spec):
     name = header.removesuffix(" map:")
 
     entries = (map(int, row.split()) for row in rows)
-    ranges = sorted(list(((src, src + lng), dst - src) for dst, src, lng in entries), key = lambda p: p[0][0])
+
+    ranges = list(((src, src + lng), dst - src) for dst, src, lng in entries)
+    ranges = sorted(ranges, key=lambda p: p[0][0])
 
     return name, ranges
 
@@ -43,6 +62,7 @@ if __name__ == "__main__":
     seeds, mappings = parse(sys.stdin)
 
     seeds = [(a, a + b) for a, b in batched(seeds, 2)]
+
     order = [
         "seed-to-soil",
         "soil-to-fertilizer",
@@ -54,30 +74,45 @@ if __name__ == "__main__":
     ]
 
     for name in order:
-        new = []
+        out = []
+
         for seed in seeds:
             start = seed[0]
             buffer = []
-            for ran, off in mappings[name]:
-                if ran[0] >= seed[1]:
+
+            for rng, offset in mappings[name]:
+                # Ranges within each mapping are sorted by their lower bound.
+                # If we are past the end of the current seed range already,
+                # we do not need to look at this seed any further.
+                if rng[0] >= seed[1]:
                     break
-                if start >= ran[1]:
+
+                # If the mapped range is left of the seed range, try the next.
+                if start >= rng[1]:
                     continue
-                if ran[0] <= start < ran[1]:
-                    new_int = (max(ran[0], start), min(ran[1], seed[1]))
-                    buffer.append((new_int[0] + off, new_int[1] + off))
-                    start = new_int[1]
-                elif start < ran[0]:
-                    buffer.append((start, ran[0]))
-                    end = min(ran[1], seed[1])
-                    buffer.append((ran[0] + off, end + off))
-                    start = end
+
+                # Start of the current slice of the seed range falls within the
+                # mapped range, so create a new range as output for the next
+                # level and proceed from the right edge of the mapped range.
+                if rng[0] <= start < rng[1]:
+                    a, b = max(rng[0], start), min(rng[1], seed[1])
+                    buffer.append((a + offset, b + offset))
+                    start = b
+                # If the mapped range is to the right of the current slice
+                # start, create an (unmapped) output range for the values up to
+                # the that range's left edge. Then create an output range with
+                # offset for the mapped section.
+                elif start < rng[0]:
+                    a, b = rng[0], min(rng[1], seed[1])
+                    buffer.append((start, a))
+                    buffer.append((a + offset, b + offset))
+                    start = b
+
             if len(buffer) > 0:
-                new += buffer
+                out += buffer
             else:
-                new.append(seed)
+                out.append(seed)
 
-
-        seeds = new
+        seeds = out
 
     print(min(a for a, _ in seeds))
