@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+
+from functools import reduce
+from itertools import batched, chain, takewhile
+import sys
+
+def blocks(lines):
+    while True:
+        block = list(l for l in takewhile(lambda v: len(v) > 0, lines))
+
+        if len(block) == 0:
+            break
+
+        yield block
+
+def mapping(spec):
+    header, *rows = spec
+
+    name = header.removesuffix(" map:")
+
+    entries = (map(int, row.split()) for row in rows)
+    ranges = sorted(list(((src, src + lng), dst - src) for dst, src, lng in entries), key = lambda p: p[0][0])
+
+    return name, ranges
+
+def parse(file):
+    lines = map(lambda l: l.rstrip(), file)
+
+    seeds = list(map(int, next(lines).removeprefix("seeds: ").split()))
+
+    next(lines) # skip blank line
+
+    mappings = dict(mapping(spec) for spec in blocks(lines))
+
+    return seeds, mappings
+
+def compose(mappings, order):
+    ordered = list(map(lambda name: mappings[name], order))
+    return lambda v: reduce(lambda x, f: f(x), ordered, v)
+
+
+if __name__ == "__main__":
+    seeds, mappings = parse(sys.stdin)
+
+    seeds = [(a, a + b) for a, b in batched(seeds, 2)]
+    order = [
+        "seed-to-soil",
+        "soil-to-fertilizer",
+        "fertilizer-to-water",
+        "water-to-light",
+        "light-to-temperature",
+        "temperature-to-humidity",
+        "humidity-to-location"
+    ]
+
+    for name in order:
+        new = []
+        for seed in seeds:
+            start = seed[0]
+            buffer = []
+            for ran, off in mappings[name]:
+                if ran[0] >= seed[1]:
+                    break
+                if start >= ran[1]:
+                    continue
+                if ran[0] <= start < ran[1]:
+                    new_int = (max(ran[0], start), min(ran[1], seed[1]))
+                    buffer.append((new_int[0] + off, new_int[1] + off))
+                    start = new_int[1]
+                elif start < ran[0]:
+                    buffer.append((start, ran[0]))
+                    end = min(ran[1], seed[1])
+                    buffer.append((ran[0] + off, end + off))
+                    start = end
+            if len(buffer) > 0:
+                new += buffer
+            else:
+                new.append(seed)
+
+
+        seeds = new
+
+    print(min(a for a, _ in seeds))
