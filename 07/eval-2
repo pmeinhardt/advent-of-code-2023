@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+from collections import Counter
+import sys
+
+labels = list(reversed("AKQT98765432J"))
+values = dict((k, v) for v, k in enumerate(labels))
+
+def strength(hand):
+    counts = Counter(hand)
+
+    js = counts.pop("J", 0)
+
+    counts = list(reversed(sorted(counts.values())))
+    typ = None
+
+    if len(counts) <= 1: # five of a kind
+        typ = 7
+    elif counts == [4, 1] or (counts[0] + js >= 4 and len(counts) <= 2): # four of a kind
+        typ = 6
+    elif counts == [3, 2] or (counts[0] + js >= 3 and len(counts) <= 2): # full house
+        typ = 5
+    elif counts == [3, 1, 1] or (counts[0] + js >= 3 and len(counts) <= 3): # three of a kind
+        typ = 4
+    elif counts == [2, 2, 1] or len(counts) <= 3: # two pair
+        typ = 3
+    elif counts == [2, 1, 1, 1] or len(counts) <= 4: # one pair
+        typ = 2
+    elif counts == [1, 1, 1, 1, 1]: # high card
+        typ = 1
+    else:
+        typ = 0
+
+    vals = tuple(values[l] for l in hand)
+
+    return (typ, vals)
+
+if __name__ == "__main__":
+    game = list((h, int(b)) for h, b in (line.split() for line in sys.stdin))
+    strengths = dict((hand, strength(hand)) for hand, _ in game)
+    ranked = sorted(game, key=lambda g: strengths[g[0]])
+    # print("\n".join(f"{h}: {strengths[h]}" for h, _ in ranked))
+    total = sum(bid * (i + 1) for i, (_, bid) in enumerate(ranked))
+    print(total)
