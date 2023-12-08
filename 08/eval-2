@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+
+import itertools
+import re
+import sys
+
+if __name__ == "__main__":
+    lines = (l.rstrip() for l in sys.stdin)
+
+    instructions = next(lines)
+    period = len(instructions)
+
+    assert period > 0, "expected non-empty instructions"
+
+    next(lines) # skip blank line
+
+    pattern = re.compile(r"(?P<name>[\d\w]+) = \((?P<left>[\d\w]+), (?P<right>[\d\w]+)\)")
+    matches = (pattern.match(line) for line in lines)
+
+    graph = {match.group("name"): (match.group("left"), match.group("right")) for match in matches}
+
+    assert len(graph) > 0, "graph should not be empty"
+
+    starts = [node for node in graph.keys() if node.endswith("A")]
+
+    pre = {node: [] for node in starts} # distances between "Z" nodes before cycling
+    cycles = {node: [] for node in starts} # distances between "Z" nodes in cycle
+
+    for start in starts:
+        directions = itertools.cycle(enumerate(instructions))
+        encounters = dict()
+
+        node = start
+        steps = 0
+
+        while True:
+            index, direction = next(directions)
+            state = (node, index)
+
+            if state in encounters:
+                path = encounters.items() # note: dictionaries are iterated in insertion order
+                target = pre[start]
+
+                for key, distance in path:
+                    if key == state:
+                        target = cycles[start]
+
+                    target.append(distance)
+
+                clen = sum(cycles[start])
+
+                assert clen % period == 0, f"cycle length {clen} not divisible by instructions count {period}"
+
+                break
+
+            if node.endswith("Z"):
+                encounters[state] = steps
+                steps = 0
+
+            node = graph[node][0 if direction == "L" else 1]
+            steps += 1
+
+    print(pre)
+    print(cycles)
+
+    # then compute lcd (least common multiple)
