@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import itertools
+import re
+import sys
+
+if __name__ == "__main__":
+    lines = (l.rstrip() for l in sys.stdin)
+
+    instructions = itertools.cycle(next(lines))
+
+    next(lines) # skip blank line
+
+    pattern = re.compile(r"(?P<name>[A-Z]+) = \((?P<left>[A-Z]+), (?P<right>[A-Z]+)\)")
+    matches = (pattern.match(line) for line in lines)
+
+    graph = dict((match.group("name"), (match.group("left"), match.group("right"))) for match in matches)
+
+    node = "AAA"
+    dest = "ZZZ"
+
+    steps = 0
+
+    while node != dest:
+        node = graph[node][0 if next(instructions) == "L" else 1]
+        steps += 1
+
+    print(steps)
