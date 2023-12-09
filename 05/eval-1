@@ -23,7 +23,7 @@ def mapping(spec):
 
     def fn(n):
         for a, b, offset in ranges:
-            if n >= a and n < b:
+            if a <= n < b:
                 return n + offset
         return n
 
