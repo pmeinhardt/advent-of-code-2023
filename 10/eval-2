@@ -103,45 +103,68 @@ if __name__ == "__main__":
 
     assert loop is not None
 
+    # create an alternative map, 3 times size of original map, padded with extra tiles
+    # create bitmap representation of path
+
+    bitmap = [[False] * ((width + 2) * 3) for _ in range((height + 2) * 3)]
+
+    for x, y in loop:
+        cx, cy = 3 * x + 4, 3 * y + 4
+
+        shape = tiles[y][x]
+
+        if shape in "-FLS": # right
+            bitmap[cy][cx + 1] = True
+
+        if shape in "|F7S": # bottom
+            bitmap[cy + 1][cx] = True
+
+        if shape in "-J7S": # left
+            bitmap[cy][cx - 1] = True
+
+        if shape in "|LJS": # top
+            bitmap[cy - 1][cx] = True
+
+        if shape in "|LJ-F7S": # center
+            bitmap[cy][cx] = True
+
+    for y, row in enumerate(bitmap):
+        for x, blocked in enumerate(row):
+            c = "#" if blocked else " "
+            print(c, end="")
+        print()
+
     # flood fill
 
-    # scale by factor 2 to flood areas choked off by loop ("increase resolution")
-    # expand map area by 1 tile in each direction to guarantee flood-filling can reach around loop
-
-    outside = set()
     front = {(-1, -1)}
-
-    border = {(x * 2, y * 2) for x, y in loop}.union({(x * 2 + 1, y * 2 + 1) for x, y in loop})
 
     while len(front) > 0:
         pos = front.pop()
-        outside.add(pos)
+
+        bitmap[pos[1]][pos[0]] = True
 
         for dx, dy in directions:
             x, y = pos[0] + dx, pos[1] + dy
 
-            if not (-1 <= x < (2 * width + 1) and -1 <= y < (2 * height + 1)):
+            if not (-3 <= x < 3 * width + 3 and -3 <= y < 3 * height + 3):
                 continue
 
-            cand = (x, y)
-
-            if cand in outside or cand in border:
+            if bitmap[y][x]:
                 continue
 
-            front.add(cand)
+            front.add((x, y))
 
     # compute number of enclosed tiles
 
     count = 0
 
-    for y in range(0, height * 2, 2):
-        for x in range(0, width * 2, 2):
-            isborder = (x, y) in border
-            isout = (x, y) in outside
-            count += 0 if isout or isborder else 1
-            c = "#" if isout else "*" if isborder else " "
+    for y in range(height):
+        for x in range(width):
+            cx, cy = x * 3 + 4, y * 3 + 4
+            filled = bitmap[cy][cx]
+            count += 0 if filled else 1
+            c = " " if filled else "#"
             print(c, end="")
-
         print()
 
     print(count)
