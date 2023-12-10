@@ -102,5 +102,4 @@ if __name__ == "__main__":
 
     assert loop is not None
 
-    print(loop)
-    print((len(loop) - 1) / 2)
+    print(int((len(loop) - 1) / 2))
