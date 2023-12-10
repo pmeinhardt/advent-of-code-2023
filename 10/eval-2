@@ -103,11 +103,13 @@ if __name__ == "__main__":
 
     assert loop is not None
 
-    # expand map area by 1 tile in each direction for flood-filling to reach around
-    # scale by factor 2 to flood areas choked off by loop
+    # flood fill
+
+    # scale by factor 2 to flood areas choked off by loop ("increase resolution")
+    # expand map area by 1 tile in each direction to guarantee flood-filling can reach around loop
 
     outside = set()
-    front = {(-2, -2)}
+    front = {(-1, -1)}
 
     border = {(x * 2, y * 2) for x, y in loop}.union({(x * 2 + 1, y * 2 + 1) for x, y in loop})
 
@@ -118,7 +120,7 @@ if __name__ == "__main__":
         for dx, dy in directions:
             x, y = pos[0] + dx, pos[1] + dy
 
-            if not (-2 <= x < 2 * (width + 1) and -2 <= y < 2 * (height + 1)):
+            if not (-1 <= x < (2 * width + 1) and -1 <= y < (2 * height + 1)):
                 continue
 
             cand = (x, y)
@@ -128,12 +130,14 @@ if __name__ == "__main__":
 
             front.add(cand)
 
+    # compute number of enclosed tiles
+
     count = 0
 
-    for y in range(height):
-        for x in range(width):
-            isborder = (x * 2, y * 2) in border
-            isout = (x * 2, y * 2) in outside
+    for y in range(0, height * 2, 2):
+        for x in range(0, width * 2, 2):
+            isborder = (x, y) in border
+            isout = (x, y) in outside
             count += 0 if isout or isborder else 1
             c = "#" if isout else "*" if isborder else " "
             print(c, end="")
