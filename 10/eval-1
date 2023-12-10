@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+
+import sys
+
+directions = [(1, 0), (0, 1), (-1, 0), (0, -1)] # right, down, left, up
+
+continuations = {
+    "|": [( 0, 1), ( 0, -1)],
+    "-": [( 1, 0), (-1,  0)],
+    "L": [( 1, 0), ( 0, -1)],
+    "J": [(-1, 0), ( 0, -1)],
+    "7": [(-1, 0), ( 0,  1)],
+    "F": [( 1, 0), ( 0,  1)],
+}
+
+if __name__ == "__main__":
+    tiles = [[c for c in line.rstrip()] for line in sys.stdin]
+
+    height = len(tiles)
+    width = len(tiles[0]) # assume equal width rows
+
+    start = None
+
+    for x in range(width):
+        for y in range(height):
+            if tiles[y][x] == "S":
+                start = (x, y)
+                break
+
+    assert start is not None
+
+    seconds = []
+
+    for dx, dy in directions:
+        x, y = start[0] + dx, start[1] + dy
+
+        if not (0 <= x < width and 0 <= y < height):
+            continue
+
+        successor = tiles[y][x]
+
+        if dx != 0 and successor == "-":
+            seconds.append((x, y))
+        elif dx < 0 and successor in ["F", "L"]:
+            seconds.append((x, y))
+        elif dx > 0 and successor in ["7", "J"]:
+            seconds.append((x, y))
+        elif dy != 0 and successor == "|":
+            seconds.append((x, y))
+        elif dy < 0 and successor in ["7", "F"]:
+            seconds.append((x, y))
+        elif dy > 0 and successor in ["J", "L"]:
+            seconds.append((x, y))
+
+    assert len(seconds) > 0
+
+    loop = None
+
+    for second in seconds:
+        path = [start, second]
+
+        while loop is None:
+            node, predecessor = path[-1], path[-2]
+
+            shape = tiles[node[1]][node[0]]
+            dirs = continuations[shape]
+
+            for dx, dy in dirs:
+                x, y = node[0] + dx, node[1] + dy
+
+                if not (0 <= x < width and 0 <= y < height): # stay on the map
+                    continue
+
+                if (x, y) == predecessor: # don't go back
+                    continue
+
+                if (x, y) == start: # found the loop
+                    path.append((x, y))
+                    loop = path
+                    break
+
+                successor = tiles[y][x]
+
+                if dx != 0 and successor == "-":
+                    path.append((x, y))
+                elif dx < 0 and successor in ["F", "L"]:
+                    path.append((x, y))
+                elif dx > 0 and successor in ["7", "J"]:
+                    path.append((x, y))
+                elif dy != 0 and successor == "|":
+                    path.append((x, y))
+                elif dy < 0 and successor in ["7", "F"]:
+                    path.append((x, y))
+                elif dy > 0 and successor in ["J", "L"]:
+                    path.append((x, y))
+
+                if path[-1] != node: # found a path continuation
+                    break
+
+            if path[-1] == node: # no progress, path hit a dead end
+                break
+
+    assert loop is not None
+
+    print(loop)
+    print((len(loop) - 1) / 2)
