@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+
+import itertools
+import sys
+
+lines = (line.rstrip() for line in sys.stdin)
+
+expansion = 1000000 - 1
+
+galaxies = set()
+
+for y, line in enumerate(lines):
+    for x, symbol in enumerate(line):
+        if symbol == "#":
+            galaxies.add((x, y))
+
+height = y + 1
+width = x + 1
+
+cols = set(range(width))
+rows = set(range(height))
+
+for x, y in galaxies:
+    cols.discard(x)
+    rows.discard(y)
+
+for x in sorted(cols, reverse=True):
+    expanded = set()
+
+    for gx, gy in galaxies:
+        expanded.add((gx + (expansion if gx > x else 0), gy))
+
+    galaxies = expanded
+
+for y in sorted(rows, reverse=True):
+    expanded = set()
+
+    for gx, gy in galaxies:
+        expanded.add((gx, gy + (expansion if gy > y else 0)))
+
+    galaxies = expanded
+
+pairs = itertools.combinations(galaxies, 2)
+
+print(sum(abs(x2 - x1) + abs(y2 - y1) for (x1, y1), (x2, y2) in pairs))
