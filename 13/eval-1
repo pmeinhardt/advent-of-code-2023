@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+
+import itertools
+import sys
+
+def axes(block):
+    for i in range(1, len(block)):
+        width = min(i, len(block) - i)
+
+        above = block[i-width:i]
+        below = block[i:i+width]
+
+        if above != list(reversed(below)):
+            continue
+
+        yield i
+
+def rotated(block):
+    result = [""] * len(block[0])
+
+    for line in reversed(block):
+        for i, c in enumerate(line):
+            result[i] += c
+
+    return result
+
+if __name__ == "__main__":
+    lines = (line.rstrip() for line in sys.stdin)
+
+    groups = itertools.groupby(lines, key=lambda l: len(l) > 0)
+    blocks = (list(lines) for nonempty, lines in groups if nonempty)
+
+    total = 0
+
+    for block in blocks:
+        for x in axes(block):
+            total += x * 100
+
+        for x in axes(rotated(block)):
+            total += x
+
+    print(total)
