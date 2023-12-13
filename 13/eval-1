@@ -35,8 +35,10 @@ if __name__ == "__main__":
     for block in blocks:
         for x in axes(block):
             total += x * 100
+            break
 
         for x in axes(rotated(block)):
             total += x
+            break
 
     print(total)

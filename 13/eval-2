@@ -48,9 +48,11 @@ if __name__ == "__main__":
 
         for x in axes(block):
             orig = f"h{x}"
+            break
 
         for x in axes(rotated(block)):
             orig = f"v{x}"
+            break
 
         for smb in smudged(block):
             found = False
