@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+
+import copy
+import itertools
+import sys
+
+def axes(block):
+    for i in range(1, len(block)):
+        width = min(i, len(block) - i)
+
+        above = block[i-width:i]
+        below = block[i:i+width]
+
+        if above != list(reversed(below)):
+            continue
+
+        yield i
+
+def rotated(block):
+    result = [""] * len(block[0])
+
+    for line in reversed(block):
+        for i, c in enumerate(line):
+            result[i] += c
+
+    return result
+
+def smudged(block):
+    height = len(block)
+    width = len(block[0])
+
+    for (i, j) in itertools.product(range(height), range(width)):
+        clone = copy.copy(block)
+        line = clone[i]
+        clone[i] = line[:j] + ("." if line[j] == "#" else "#") + line[j+1:]
+        yield clone
+
+if __name__ == "__main__":
+    lines = (line.rstrip() for line in sys.stdin)
+
+    groups = itertools.groupby(lines, key=lambda l: len(l) > 0)
+    blocks = (list(lines) for nonempty, lines in groups if nonempty)
+
+    total = 0
+
+    for block in blocks:
+        orig = None
+
+        for x in axes(block):
+            orig = f"h{x}"
+
+        for x in axes(rotated(block)):
+            orig = f"v{x}"
+
+        for smb in smudged(block):
+            found = False
+
+            for x in axes(smb):
+                if f"h{x}" != orig:
+                    found = True
+                    total += x * 100
+                    break
+
+            if found:
+                break
+
+            for x in axes(rotated(smb)):
+                if f"v{x}" != orig:
+                    found = True
+                    total += x
+                    break
+
+            if found:
+                break
+
+    print(total)
